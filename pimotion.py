@@ -1,3 +1,7 @@
+#! /usr/bin/python
+
+# Updates by @arw, 2015-05-08
+
 # Version 0.21, 2014-05-11
 # Script created by Leo Santos ( http://www.leosantos.com )
 # Based on the picam.py script (by brainflakes, pageauc, peewee2 and Kesthal) and picamera examples.
@@ -35,10 +39,10 @@ class Motion:
 
 		self.framerate = 15			# Video file framerate.
 		self.rotation = 0			# Rotates image (warning: cropping will occur!)
-		self.filepath = "/home/"		# Local file path for video files
+		self.filepath = "/tmp/"			# Local file path for video files
 		self.prefix = ""			# Optional filename prefix
-		self.convertToMp4 = False		# Requires GPAC to be installed. Removes original .h264 file
-		self.useDateAsFolders = True		# Creates folders with current year, month and day, then saves file in the day folder.
+		self.convertToMp4 = True		# Requires GPAC to be installed. Removes original .h264 file
+		self.useDateAsFolders = False		# Creates folders with current year, month and day, then saves file in the day folder.
 		self.usePreviewWindow = False		# Whether the preview window will be opened when running inside X.
 		
 		self.testInterval = 0.25		# Interval at which stills are captured to test for motion
@@ -71,6 +75,7 @@ class Motion:
 		self.camera.rotation = self.rotation
 		self.camera.meter_mode = "average"	# Values are: average, spot, matrix, backlit
 	
+		self.commandOnRecordStop = "/usr/local/bin/fileupload"
 	
 	def StartRecording( self ):
 		if not self.isRecording and not self.skip:
@@ -118,8 +123,11 @@ class Motion:
 				subprocess.call( [ "MP4Box","-fps",str(self.framerate),"-add",self.filename,self.mp4name ] )
 				subprocess.call( [ "rm", self.filename ] )
 				print "\n"
+				subprocess.call( [ self.commandOnRecordStop, self.mp4name] )
 			else:
 				print "Finished recording."
+				subprocess.call( [ self.commandOnRecordStop, self.filename ] )
+
 
 	def CaptureTestImage( self ):
 		self.camera.image_effect = "none"
